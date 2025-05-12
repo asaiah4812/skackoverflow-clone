@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<div class="row">
+  <!-- Sidebar -->
+  <div class="col-lg-3 mb-4">
+    <div class="card">
+      <div class="card-header bg-light">
+        <h5 class="mb-0">Categories</h5>
+      </div>
+      <div class="list-group list-group-flush">
+        <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+          All Questions
+          <span class="badge bg-secondary rounded-pill">{{ total_questions }}</span>
+        </a>
+        <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+          Unanswered
+          <span class="badge bg-secondary rounded-pill">{{ unanswered_count }}</span>
+        </a>
+        <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+          Popular
+          <span class="badge bg-secondary rounded-pill">{{ popular_count }}</span>
+        </a>
+      </div>
+    </div>
+    
+    <div class="card mt-4">
+      <div class="card-header bg-light">
+        <h5 class="mb-0">Top Tags</h5>
+      </div>
+      <div class="card-body">
+        <div class="d-flex flex-wrap gap-2">
+          {% for tag in top_tags %}
+          <a href="#" class="badge bg-light text-dark text-decoration-none p-2 border">
+            {{ tag.name }}
+            <span class="text-muted">×{{ tag.count }}</span>
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Main content -->
+  <div class="col-lg-9">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h1 class="h3">All Questions</h1>
+      <a href="{{ url_for('questions.ask') }}" class="btn btn-orange">Ask Question</a>
+    </div>
+    
+    <!-- Search and filter -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <form method="GET" action="{{ url_for('main.index') }}" class="mb-3">
+          <div class="input-group">
+            {{ search_form.query(class="form-control", placeholder="Search questions...") }}
+            <button type="submit" class="btn btn-outline-secondary">
+              <i class="fas fa-search"></i>
+            </button>
+          </div>
+        </form>
+        
+        <div class="d-flex justify-content-between align-items-center">
+          <div class="btn-group">
+            <a href="{{ url_for('main.index', sort='newest') }}" class="btn btn-sm {{ 'btn-primary' if sort == 'newest' else 'btn-outline-secondary' }}">Newest</a>
+            <a href="{{ url_for('main.index', sort='active') }}" class="btn btn-sm {{ 'btn-primary' if sort == 'active' else 'btn-outline-secondary' }}">Active</a>
+            <a href="{{ url_for('main.index', sort='votes') }}" class="btn btn-sm {{ 'btn-primary' if sort == 'votes' else 'btn-outline-secondary' }}">Votes</a>
+          </div>
+          <span class="text-muted">{{ questions.total }} questions</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Questions list -->
+    {% if questions and questions.items %}
+      {% for question in questions.items %}
+      <div class="card mb-3">
+        <div class="card-body">
+          <div class="row">
+            <!-- Stats -->
+            <div class="col-md-2 text-center mb-3 mb-md-0">
+              <div class="d-flex flex-md-column justify-content-around">
+                <div class="mb-md-2">
+                  <div class="fs-5 fw-bold">{{ question.score }}</div>
+                  <div class="text-muted small">votes</div>
+                </div>
+                <div class="mb-md-2">
+                  <div class="fs-5 fw-bold">{{ question.answer_count }}</div>
+                  <div class="text-muted small">answers</div>
+                </div>
+                <div>
+                  <div class="fs-5 fw-bold">{{ question.views }}</div>
+                  <div class="text-muted small">views</div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Question details -->
+            <div class="col-md-10">
+              <h5 class="card-title">
+                <a href="{{ url_for('questions.view', question_id=question.id) }}" class="text-decoration-none">
+                  {{ question.title }}
+                </a>
+              </h5>
+              <div class="d-flex flex-wrap gap-1 mb-2">
+                {% for tag in question.tags %}
+                <a href="{{ url_for('questions.tags') }}?tag={{ tag.name }}" class="badge bg-light text-dark text-decoration-none">
+                  {{ tag.name }}
+                </a>
+                {% endfor %}
+              </div>
+              
+              <!-- User info -->
+              <div class="d-flex justify-content-between align-items-center">
+                <div class="small text-muted">
+                  asked {{ moment(question.created_at).fromNow() }}
+                </div>
+                <div class="d-flex align-items-center">
+                  <img src="{{ url_for('static', filename=question.user.profile_image or 'img/default-profile.png') }}" alt="{{ question.user.username }}" class="rounded-circle me-2" width="24" height="24">
+                  <a href="{{ url_for('users.profile', username=question.user.username) }}" class="text-decoration-none">
+                    {{ question.user.username }}
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="card">
+        <div class="card-body text-center py-5">
+          <i class="fas fa-search fa-3x text-muted mb-3"></i>
+          <h3>No questions found</h3>
+          <p class="text-muted">Be the first to ask a question!</p>
+          <a href="{{ url_for('questions.ask') }}" class="btn btn-orange mt-3">Ask a Question</a>
+        </div>
+      </div>
+    {% endif %}
+
+    <!-- Pagination -->
+    {% if questions and questions.pages and questions.pages > 1 %}
+    <nav aria-label="Page navigation" class="mt-4">
+      <ul class="pagination justify-content-center">
+        {% if questions.has_prev %}
+        <li class="page-item">
+          <a class="page-link" href="{{ url_for('main.index', page=questions.prev_num, sort=sort) }}">Previous</a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+          <span class="page-link">Previous</span>
+        </li>
+        {% endif %}
+        
+        {% for page_num in questions.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+          {% if page_num %}
+            {% if page_num == questions.page %}
+            <li class="page-item active">
+              <span class="page-link">{{ page_num }}</span>
+            </li>
+            {% else %}
+            <li class="page-item">
+              <a class="page-link" href="{{ url_for('main.index', page=page_num, sort=sort) }}">{{ page_num }}</a>
+            </li>
+            {% endif %}
+          {% else %}
+            <li class="page-item disabled">
+              <span class="page-link">...</span>
+            </li>
+          {% endif %}
+        {% endfor %}
+        
+        {% if questions.has_next %}
+        <li class="page-item">
+          <a class="page-link" href="{{ url_for('main.index', page=questions.next_num, sort=sort) }}">Next</a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+          <span class="page-link">Next</span>
+        </li>
+        {% endif %}
+      </ul>
+    </nav>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+
+
+
+
+
+

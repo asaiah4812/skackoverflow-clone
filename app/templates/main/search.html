@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}Search Results{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h1 class="mb-4">Search Results for "{{ query }}"</h1>
+        
+        <!-- Search form -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <form method="GET" action="{{ url_for('main.search') }}">
+                    <div class="input-group">
+                        {{ search_form.query(class="form-control", placeholder="Search questions...", value=query) }}
+                        <button type="submit" class="btn btn-primary">Search</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Results -->
+        {% if results and results.items %}
+            <p>Found {{ results.total }} result{% if results.total != 1 %}s{% endif %}</p>
+            
+            {% for question in results.items %}
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="d-flex">
+                            <!-- Stats -->
+                            <div class="text-center me-3">
+                                <div class="d-flex flex-column align-items-center">
+                                    <div class="mb-2">
+                                        <span class="d-block">{{ question.votes }}</span>
+                                        <small class="text-muted">votes</small>
+                                    </div>
+                                    <div class="mb-2">
+                                        <span class="d-block">{{ question.answer_count }}</span>
+                                        <small class="text-muted">answers</small>
+                                    </div>
+                                    <div>
+                                        <span class="d-block">{{ question.views }}</span>
+                                        <small class="text-muted">views</small>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Question details -->
+                            <div class="flex-grow-1">
+                                <h5 class="card-title">
+                                    <a href="{{ url_for('questions.view', question_id=question.id) }}" class="text-decoration-none">
+                                        {{ question.title }}
+                                    </a>
+                                </h5>
+                                <p class="card-text text-truncate">{{ question.body[:200] }}</p>
+                                
+                                <!-- Tags -->
+                                <div class="mb-2">
+                                    {% for tag in question.tags %}
+                                        <a href="{{ url_for('main.index', tags=tag.id) }}" class="badge bg-secondary text-decoration-none me-1">
+                                            {{ tag.name }}
+                                        </a>
+                                    {% endfor %}
+                                </div>
+                                
+                                <!-- User and time -->
+                                <div class="d-flex justify-content-end">
+                                    <small class="text-muted">
+                                        Asked by 
+                                        <a href="{{ url_for('users.profile', username=question.user.username) }}" class="text-decoration-none">
+                                            {{ question.user.username }}
+                                        </a> 
+                                        on {{ moment(question.created_at).format('LL') }}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+            
+            <!-- Pagination -->
+            {% if results.pages > 1 %}
+                <nav aria-label="Search results pages">
+                    <ul class="pagination justify-content-center">
+                        {% if results.has_prev %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('main.search', query=query, page=results.prev_num) }}">Previous</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">Previous</span>
+                            </li>
+                        {% endif %}
+                        
+                        {% for page_num in results.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                            {% if page_num %}
+                                {% if page_num == results.page %}
+                                    <li class="page-item active">
+                                        <span class="page-link">{{ page_num }}</span>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ url_for('main.search', query=query, page=page_num) }}">{{ page_num }}</a>
+                                    </li>
+                                {% endif %}
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link">...</span>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if results.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('main.search', query=query, page=results.next_num) }}">Next</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">Next</span>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            {% endif %}
+        {% else %}
+            <div class="alert alert-info">
+                No results found for "{{ query }}". Try different keywords or <a href="{{ url_for('questions.ask') }}">ask a new question</a>.
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

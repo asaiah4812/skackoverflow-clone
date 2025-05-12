@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+
+{% block title %}{{ question.title }}{% endblock %}
+
+{% block content %}
+<!-- Question -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="d-flex">
+            <!-- Voting -->
+            <div class="me-3 text-center">
+                <div class="d-flex flex-column align-items-center">
+                    <a href="#" class="vote-btn text-decoration-none fs-4 mb-2 {% if user_vote and user_vote.vote_type == 1 %}text-primary{% endif %}" data-type="up" data-id="{{ question.id }}" data-target="question">
+                        <i class="fas fa-caret-up"></i>
+                    </a>
+                    <span class="fs-5 mb-2">{{ question.votes }}</span>
+                    <a href="#" class="vote-btn text-decoration-none fs-4 mb-2 {% if user_vote and user_vote.vote_type == -1 %}text-danger{% endif %}" data-type="down" data-id="{{ question.id }}" data-target="question">
+                        <i class="fas fa-caret-down"></i>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Question content -->
+            <div class="flex-grow-1">
+                <h2 class="card-title mb-3">{{ question.title }}</h2>
+                <div class="card-text mb-4">{{ question.body }}</div>
+                
+                <!-- Tags -->
+                <div class="mb-3">
+                    {% for tag in question.tags %}
+                        <a href="{{ url_for('main.index', tags=tag.id) }}" class="badge bg-secondary text-decoration-none me-1">
+                            {{ tag.name }}
+                        </a>
+                    {% endfor %}
+                </div>
+                
+                <!-- Question metadata -->
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="text-muted">
+                            <i class="fas fa-eye me-1"></i> {{ question.views }} views
+                        </span>
+                    </div>
+                    <div class="text-end">
+                        <div class="card bg-light p-2">
+                            <div class="d-flex align-items-center">
+                                {% if question.user.profile_image %}
+                                    <img src="{{ url_for('static', filename=question.user.profile_image) }}" alt="{{ question.user.username }}" class="rounded-circle me-2" style="width: 32px; height: 32px;">
+                                {% else %}
+                                    <img src="{{ url_for('static', filename='img/default-profile.png') }}" alt="{{ question.user.username }}" class="rounded-circle me-2" style="width: 32px; height: 32px;">
+                                {% endif %}
+                                <div>
+                                    <div>
+                                        <small>
+                                            Asked on {{ question.created_at.strftime('%b %d, %Y at %H:%M') }}
+                                        </small>
+                                    </div>
+                                    <div>
+                                        <a href="{{ url_for('users.profile', username=question.user.username) }}" class="text-decoration-none">
+                                            {{ question.user.username }}
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Question actions -->
+                {% if current_user.is_authenticated and (current_user.id == question.user_id or current_user.is_admin) %}
+                    <div class="mt-3 text-end">
+                        <a href="{{ url_for('questions.edit', question_id=question.id) }}" class="btn btn-sm btn-outline-primary me-2">
+                            <i class="fas fa-edit me-1"></i> Edit
+                        </a>
+                        <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteQuestionModal">
+                            <i class="fas fa-trash me-1"></i> Delete
+                        </button>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Answers header -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3>{{ answers|length }} Answer{% if answers|length != 1 %}s{% endif %}</h3>
+    <div>
+        <select class="form-select form-select-sm" id="answerSortSelect">
+            <option value="votes">Highest score (default)</option>
+            <option value="newest">Date created (newest first)</option>
+            <option value="oldest">Date created (oldest first)</option>
+        </select>
+    </div>
+</div>
+
+<!-- Answers -->
+{% if answers %}
+    <div id="answers-container">
+        {% for answer in answers %}
+            <div class="card mb-3 {% if answer.is_accepted %}border-success{% endif %}" id="answer-{{ answer.id }}">
+                <div class="card-body">
+                    <div class="d-flex">
+                        <!-- Voting -->
+                        <div class="me-3 text-center">
+                            <div class="d-flex flex-column align-items-center">
+                                <a href="#" class="vote-btn text-decoration-none fs-4 mb-2" data-type="up" data-id="{{ answer.id }}" data-target="answer">
+                                    <i class="fas fa-caret-up"></i>
+                                </a>
+                                <span class="fs-5 mb-2">{{ answer.votes }}</span>
+                                <a href="#" class="vote-btn text-decoration-none fs-4 mb-2" data-type="down" data-id="{{ answer.id }}" data-target="answer">
+                                    <i class="fas fa-caret-down"></i>
+                                </a>
+                                
+                                {% if current_user.id == question.user_id %}
+                                    <a href="#" class="accept-answer-btn text-decoration-none fs-4 {% if answer.is_accepted %}text-success{% endif %}" data-id="{{ answer.id }}">
+                                        <i class="fas fa-check-circle"></i>
+                                    </a>
+                                {% elif answer.is_accepted %}
+                                    <span class="text-success fs-4">
+                                        <i class="fas fa-check-circle"></i>
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Answer content -->
+                        <div class="flex-grow-1">
+                            <div class="card-text mb-4">{{ answer.body }}</div>
+                            
+                            <!-- Answer metadata -->
+                            <div class="d-flex justify-content-end">
+                                <div class="card bg-light p-2">
+                                    <div class="d-flex align-items-center">
+                                        {% if answer.user.profile_image %}
+                                            <img src="{{ url_for('static', filename=answer.user.profile_image) }}" alt="{{ answer.user.username }}" class="rounded-circle me-2" style="width: 32px; height: 32px;">
+                                        {% else %}
+                                            <img src="{{ url_for('static', filename='img/default-profile.png') }}" alt="{{ answer.user.username }}" class="rounded-circle me-2" style="width: 32px; height: 32px;">
+                                        {% endif %}
+                                        <div>
+                                            <div>
+                                                <small>
+                                                    Answered on {{ answer.created_at.strftime('%b %d, %Y at %H:%M') }}
+                                                </small>
+                                            </div>
+                                            <div>
+                                                <a href="{{ url_for('users.profile', username=answer.user.username) }}" class="text-decoration-none">
+                                                    {{ answer.user.username }}
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Answer actions -->
+                            {% if current_user.is_authenticated and (current_user.id == answer.user_id or current_user.is_admin) %}
+                                <div class="mt-3 text-end">
+                                    <a href="#" class="btn btn-sm btn-outline-primary me-2 edit-answer-btn" data-id="{{ answer.id }}">
+                                        <i class="fas fa-edit me-1"></i> Edit
+                                    </a>
+                                    <button type="button" class="btn btn-sm btn-outline-danger delete-answer-btn" data-id="{{ answer.id }}">
+                                        <i class="fas fa-trash me-1"></i> Delete
+                                    </button>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="alert alert-info">
+        No answers yet. Be the first to answer this question!
+    </div>
+{% endif %}
+
+<!-- Answer form section -->
+{% if current_user.is_authenticated %}
+    <div class="card mt-4">
+        <div class="card-header">
+            <h5>Your Answer</h5>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('answers.create', question_id=question.id) }}" enctype="multipart/form-data">
+                {{ answer_form.csrf_token }}
+                
+                <div class="form-group mb-3">
+                    {{ answer_form.body.label(class="form-label") }}
+                    {{ answer_form.body(class="form-control", rows=8) }}
+                    {% if answer_form.body.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in answer_form.body.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group mb-3">
+                    {{ answer_form.attachments.label(class="form-label") }}
+                    {{ answer_form.attachments(class="form-control") }}
+                    {% if answer_form.attachments.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in answer_form.attachments.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="d-grid">
+                    {{ answer_form.submit(class="btn btn-primary") }}
+                </div>
+            </form>
+        </div>
+    </div>
+{% else %}
+    <div class="alert alert-info mt-4">
+        <p>You must <a href="{{ url_for('auth.login') }}">log in</a> to answer this question.</p>
+    </div>
+{% endif %}
+{% endblock %}
+
+
+

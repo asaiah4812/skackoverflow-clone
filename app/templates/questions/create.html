@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Ask a Question{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">Ask a Question</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="form-group mb-3">
+                        {{ form.title.label(class="form-label") }}
+                        {{ form.title(class="form-control") }}
+                        {% if form.title.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.title.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">Be specific and imagine you're asking a question to another person</div>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        {{ form.body.label(class="form-label") }}
+                        {{ form.body(class="form-control", rows=10) }}
+                        {% if form.body.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.body.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">Include all the information someone would need to answer your question</div>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        {{ form.tags.label(class="form-label") }}
+                        {{ form.tags(class="form-select", multiple=true) }}
+                        {% if form.tags.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.tags.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">Add up to 5 tags to describe what your question is about</div>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        {{ form.attachments.label(class="form-label") }}
+                        {{ form.attachments(class="form-control") }}
+                        {% if form.attachments.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.attachments.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('main.index') }}" class="btn btn-secondary me-md-2">Cancel</a>
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}Questions tagged: {{ tag.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="row">
+    <div class="col-12">
+      <h1 class="mb-4">
+        Questions tagged: <span class="badge bg-secondary">{{ tag.name }}</span>
+      </h1>
+      
+      {% if tag.description %}
+      <div class="alert alert-info mb-4">
+        {{ tag.description }}
+      </div>
+      {% endif %}
+      
+      <!-- Questions list -->
+      {% if questions.items %}
+        {% for question in questions.items %}
+        <div class="card mb-3">
+          <div class="card-body">
+            <div class="row">
+              <!-- Stats -->
+              <div class="col-md-2 text-center mb-3 mb-md-0">
+                <div class="d-flex flex-md-column justify-content-around">
+                  <div class="mb-md-2">
+                    <div class="fs-5 fw-bold">{{ question.score }}</div>
+                    <div class="text-muted small">votes</div>
+                  </div>
+                  <div class="mb-md-2">
+                    <div class="fs-5 fw-bold">{{ question.answer_count }}</div>
+                    <div class="text-muted small">answers</div>
+                  </div>
+                  <div>
+                    <div class="fs-5 fw-bold">{{ question.views }}</div>
+                    <div class="text-muted small">views</div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Question details -->
+              <div class="col-md-10">
+                <h5 class="card-title">
+                  <a href="{{ url_for('questions.view', question_id=question.id) }}" class="text-decoration-none">
+                    {{ question.title }}
+                  </a>
+                </h5>
+                <div class="d-flex flex-wrap gap-1 mb-2">
+                  {% for tag in question.tags %}
+                  <a href="{{ url_for('questions.tag_questions', tag_id=tag.id) }}" class="badge bg-light text-dark text-decoration-none">
+                    {{ tag.name }}
+                  </a>
+                  {% endfor %}
+                </div>
+                
+                <!-- User info -->
+                <div class="d-flex justify-content-between align-items-center">
+                  <div class="small text-muted">
+                    asked {{ moment(question.created_at).fromNow() }}
+                  </div>
+                  <div class="d-flex align-items-center">
+                    <img src="{{ url_for('static', filename=question.user.profile_image or 'img/default-profile.png') }}" alt="{{ question.user.username }}" class="rounded-circle me-2" width="24" height="24">
+                    <a href="{{ url_for('users.profile', username=question.user.username) }}" class="text-decoration-none">
+                      {{ question.user.username }}
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+        
+        <!-- Pagination -->
+        {% if questions.pages > 1 %}
+        <nav aria-label="Page navigation" class="mt-4">
+          <ul class="pagination justify-content-center">
+            {% if questions.has_prev %}
+            <li class="page-item">
+              <a class="page-link" href="{{ url_for('questions.tag_questions', tag_id=tag.id, page=questions.prev_num) }}">Previous</a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+              <span class="page-link">Previous</span>
+            </li>
+            {% endif %}
+            
+            {% for page_num in questions.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+              {% if page_num %}
+                {% if page_num == questions.page %}
+                <li class="page-item active">
+                  <span class="page-link">{{ page_num }}</span>
+                </li>
+                {% else %}
+                <li class="page-item">
+                  <a class="page-link" href="{{ url_for('questions.tag_questions', tag_id=tag.id, page=page_num) }}">{{ page_num }}</a>
+                </li>
+                {% endif %}
+              {% else %}
+                <li class="page-item disabled">
+                  <span class="page-link">...</span>
+                </li>
+              {% endif %}
+            {% endfor %}
+            
+            {% if questions.has_next %}
+            <li class="page-item">
+              <a class="page-link" href="{{ url_for('questions.tag_questions', tag_id=tag.id, page=questions.next_num) }}">Next</a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+              <span class="page-link">Next</span>
+            </li>
+            {% endif %}
+          </ul>
+        </nav>
+        {% endif %}
+      {% else %}
+        <div class="alert alert-info">
+          No questions found with this tag.
+        </div>
+      {% endif %}
+      
+      <div class="mt-4">
+        <a href="{{ url_for('questions.tags') }}" class="btn btn-secondary">Back to Tags</a>
+        <a href="{{ url_for('questions.ask') }}" class="btn btn-primary">Ask a Question</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

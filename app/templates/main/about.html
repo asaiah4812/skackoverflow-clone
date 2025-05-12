@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}About{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <h1 class="card-title text-center mb-4">About Stack Overflow Clone</h1>
+                <p class="lead">
+                    This is a Stack Overflow clone built with Flask, a lightweight WSGI web application framework in Python.
+                </p>
+                
+                <h3>Features</h3>
+                <ul>
+                    <li>User authentication and profile management</li>
+                    <li>Ask and answer questions</li>
+                    <li>Vote on questions and answers</li>
+                    <li>Tag questions for better organization</li>
+                    <li>Search and filter questions</li>
+                    <li>Markdown support for rich text formatting</li>
+                </ul>
+                
+                <h3>Technologies Used</h3>
+                <ul>
+                    <li>Flask - Web framework</li>
+                    <li>SQLAlchemy - ORM for database operations</li>
+                    <li>Flask-Login - User session management</li>
+                    <li>Flask-WTF - Form handling and validation</li>
+                    <li>Bootstrap 5 - Frontend framework</li>
+                    <li>Jinja2 - Templating engine</li>
+                </ul>
+                
+                <p class="mt-4">
+                    This project was created as a learning exercise to demonstrate Flask application development
+                    with a focus on building a complex, interactive web application.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

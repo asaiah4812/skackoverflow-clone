@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}Page Not Found{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6" style="margin: 0 auto; text-align: center; padding: 50px 0;">
+        <h1 style="font-size: 72px; color: #e4e6e8;">404</h1>
+        <h2 style="margin-bottom: 20px;">Page Not Found</h2>
+        <p style="color: #6a737c; margin-bottom: 30px;">The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.</p>
+        <a href="{{ url_for('main.index') }}" class="btn btn-primary">
+            <i class="fas fa-home" style="margin-right: 8px;"></i>Go to Homepage
+        </a>
+    </div>
+</div>
+{% endblock %}
+

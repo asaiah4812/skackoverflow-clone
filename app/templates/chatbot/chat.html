@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}AI Assistant{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">AI Assistant</h4>
+            </div>
+            <div class="card-body">
+                <div id="chat-messages" class="mb-4" style="height: 400px; overflow-y: auto; border: 1px solid #e0e0e0; padding: 15px; border-radius: 5px;">
+                    <div class="message system-message">
+                        <div class="message-content">
+                            Hello! I'm your AI assistant. How can I help you with your programming questions today?
+                        </div>
+                    </div>
+                </div>
+                
+                <form id="chat-form">
+                    <div class="form-group mb-3">
+                        <label for="message" class="form-label">Your Question</label>
+                        <textarea id="message" name="message" class="form-control" rows="3" required></textarea>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">Send</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .message {
+        margin-bottom: 15px;
+        padding: 10px 15px;
+        border-radius: 10px;
+        max-width: 80%;
+    }
+    .user-message {
+        background-color: #e3f2fd;
+        margin-left: auto;
+        text-align: right;
+    }
+    .system-message {
+        background-color: #f5f5f5;
+        margin-right: auto;
+    }
+    .message-content {
+        word-wrap: break-word;
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const chatForm = document.getElementById('chat-form');
+    const messageInput = document.getElementById('message');
+    const chatMessages = document.getElementById('chat-messages');
+    
+    chatForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const message = messageInput.value.trim();
+        if (!message) return;
+        
+        // Add user message to chat
+        addMessage(message, 'user');
+        
+        // Clear input
+        messageInput.value = '';
+        
+        // Send to server and get response
+        fetch('/chatbot/ask', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                question: message
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Add AI response to chat
+            addMessage(data.response, 'system');
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            addMessage('Sorry, there was an error processing your request.', 'system');
+        });
+    });
+    
+    function addMessage(content, type) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${type}-message`;
+        
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'message-content';
+        contentDiv.textContent = content;
+        
+        messageDiv.appendChild(contentDiv);
+        chatMessages.appendChild(messageDiv);
+        
+        // Scroll to bottom
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+});
+</script>
+{% endblock %}

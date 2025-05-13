@@ -38,6 +38,7 @@ def create_app(config_name):
     from app.routes.questions import questions_bp
     from app.routes.answers import answers_bp
     from app.routes.users import users_bp
+    from app.routes.chatbot import chatbot_bp
     from app.utils.filters import filters_bp
     
     app.register_blueprint(main_bp)
@@ -45,6 +46,7 @@ def create_app(config_name):
     app.register_blueprint(questions_bp, url_prefix='/questions')
     app.register_blueprint(answers_bp, url_prefix='/answers')
     app.register_blueprint(users_bp, url_prefix='/users')
+    app.register_blueprint(chatbot_bp, url_prefix='/chatbot')
     app.register_blueprint(filters_bp)
     
     # Shell context processor

@@ -25,6 +25,11 @@ class Config:
     UPLOAD_FOLDER = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'app/static/uploads')
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB max upload
     
+    # OpenRouter API settings
+    OPENROUTER_API_KEY = os.environ.get('OPENROUTER_API_KEY') or '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'
+    OPENROUTER_MODEL = os.environ.get('OPENROUTER_MODEL') or 'deepseek/deepseek-coder'
+    OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1'
+    
     @staticmethod
     def init_app(app):
         """Initialize application with this configuration."""
